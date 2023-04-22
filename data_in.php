@@ -1,7 +1,7 @@
 <html>
 <head>
+<meta charset="utf-8">
 <title>Ajouter une astuce.</title>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 </head>
 
 <body bgcolor="#C1C1FF" text="#000000" vlink="#000000" link="#000000" alink="#000000">
@@ -55,34 +55,31 @@
       <td valign="top" bgcolor="#DFDFFF"> 
         <p><b> 
           <?php
-          require_once("database.php");
+          require_once("config.inc.php");
 
           if (isset($_POST["submit"])) {
-            $database = new DatabaseClass();
-            $current_date = date("Y-m-d");
+            $db = mysql_connect($db_host, $db_username, $db_password);
+            if (!$db) {
+              die("Connexion impossible : " . mysql_error());
+            } else {
+              if (mysql_select_db($db_name, $db)) {
+                $pseudo = sanitizeInput($_POST["pseudo"]);
+                $email = sanitizeInput($_POST["email"]);
+                $titre = sanitizeInput($_POST["titre"]);
+                $astuce = sanitizeInput($_POST["astuce"]);
 
-            $pseudo = sanitizeInput($_POST["pseudo"]);
-            $email = sanitizeInput($_POST["email"]);
-            $titre = sanitizeInput($_POST["titre"]);
-            $astuce = sanitizeInput($_POST["astuce"]);
-
-            $data = array('id' => NULL,
-              'curdate' => $current_date,
-              'pseudo' => $pseudo,
-              'email' => $email,
-              'titre' => $titre,
-              'astuce' => $astuce,
-          );
-            $sql = "INSERT INTO astuces (id, date, pseudo, email, titre, astuce) VALUES (:id, :curdate, :pseudo, :email, :titre, :astuce)";
-            $stmt = $database::$dbh->prepare($sql);
-            $stmt->execute($data);
-            print("<b>Merci d'avoir ajouté votre astuce.</b>\n");
+                $sql = "INSERT INTO $db_usertable VALUES (NULL, NOW(), '$pseudo', '$email', '$titre', '$astuce')";
+                $ret = mysql_query($sql, $db);
+                print("<b>Merci d'avoir ajouté votre astuce.</b>\n");
+              }
+            }
           }
           function sanitizeInput($data)
           {
             $data = trim($data);
             $data = strip_tags($data);
             $data = htmlspecialchars($data);
+            $data = mysql_real_escape_string($data);
             return $data;
           }
           ?>

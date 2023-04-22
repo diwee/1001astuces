@@ -1,7 +1,7 @@
 <html>
 <head>
+<meta charset="utf-8">
 <title>Lire les astuces</title>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 </head>
 
 <body bgcolor="#C1C1FF" text="#000000" vlink="#000000" link="#000000" alink="#000000">
@@ -58,33 +58,37 @@
           ::: Lire</font></b></font>
         <table border="1" cellpadding="0"><br>
           <?php
-          require_once("database.php");
+          require_once("config.inc.php");
 
-          $database = new DatabaseClass();
+          $db = mysql_connect($db_host, $db_username, $db_password);
+          if (!$db) {
+            die("Connexion impossible : " . mysql_error());
+          } else {
+            if (mysql_select_db($db_name, $db)) {
 
-          $sql = "SELECT * from " . ConfigDatabase::DB_USERTABLE;
-          $stmt = $database::$dbh->prepare($sql);
-          ;
-          $stmt->execute();
+              $query = "SELECT * FROM $db_usertable";
+              $result = mysql_query($query, $db);
 
-          while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            print("<tr><td bgcolor=\"#8E8EC8\"><b>");
-            printf(
-              "<font color=\"white\">%s</font></b></td></tr>\n",
-              $row["titre"]
-            );
-            printf(
-              "<td>Par: <a href=\"mailto:%s\">%s</a>\n",
-              $row["email"], $row["pseudo"]
-            );
-            printf(
-              "<br>Ajoutée le : %s<hr>\n",
-              $row["date"]
-            );
-            printf(
-              "%s</td></tr>\n",
-              $row["astuce"]
-            );
+              while ($row = mysql_fetch_array($result)) {
+                print("<tr><td bgcolor=\"#8E8EC8\"><b>");
+                printf(
+                  "<font color=\"white\">%s</font></b></td></tr>\n",
+                  stripslashes($row["titre"])
+                );
+                printf(
+                  "<td>Par: <a href=\"mailto:%s\">%s</a>\n",
+                  stripslashes($row["email"]),  stripslashes($row["pseudo"])
+                );
+                printf(
+                  "<br>Ajoutée le : %s<hr>\n",
+                  stripslashes($row["date"])
+                );
+                printf(
+                  "%s</td></tr>\n",
+                  stripslashes($row["astuce"])
+                );
+              }
+            }
           }
           ?>
         </table>
